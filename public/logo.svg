@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 90" width="420" height="90">
+  <text
+    x="10"
+    y="72"
+    font-family="'Arial Black', 'Impact', 'Franklin Gothic Heavy', sans-serif"
+    font-size="78"
+    font-weight="900"
+    font-style="italic"
+    fill="white"
+    filter="drop-shadow(2px 3px 6px rgba(0,0,0,0.35))"
+    letter-spacing="-2"
+  >SECURE-<tspan fill="#67e8f9">CRM</tspan></text>
+</svg>

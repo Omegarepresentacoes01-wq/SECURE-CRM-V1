@@ -1,0 +1,205 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 220 90% 56%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 220 90% 56%;
+    --chart-1: 220 90% 56%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --radius: 0.5rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 97%;
+    --card: 222 45% 14%;
+    --card-foreground: 210 40% 97%;
+    --popover: 222 45% 14%;
+    --popover-foreground: 210 40% 97%;
+    --primary: 199 89% 52%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 222 40% 20%;
+    --secondary-foreground: 210 40% 95%;
+    --muted: 222 40% 18%;
+    --muted-foreground: 215 25% 72%;
+    --accent: 222 40% 20%;
+    --accent-foreground: 210 40% 97%;
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 222 40% 28%;
+    --input: 222 40% 18%;
+    --ring: 199 89% 52%;
+    --chart-1: 199 89% 55%;
+    --chart-2: 160 65% 50%;
+    --chart-3: 38 90% 60%;
+    --chart-4: 280 70% 65%;
+    --chart-5: 340 80% 60%;
+    --sidebar-background: 222 47% 8%;
+    --sidebar-foreground: 210 40% 97%;
+    --sidebar-primary: 199 89% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 40% 20%;
+    --sidebar-accent-foreground: 210 40% 97%;
+    --sidebar-border: 222 40% 25%;
+    --sidebar-ring: 199 89% 52%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-weight: 500;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  /* Bordas padrão mais grossas */
+  .border { border-width: 2px; }
+  .border-t { border-top-width: 2px; }
+  .border-b { border-bottom-width: 2px; }
+  .border-l { border-left-width: 2px; }
+  .border-r { border-right-width: 2px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   DARK MODE UTILITY OVERRIDES
+   Targets hardcoded Tailwind bg/text/border classes.
+   .dark prefix = specificity 0-2-0 > single-class 0-1-0 → wins cleanly.
+═══════════════════════════════════════════════════════════════════ */
+
+/* ── Page shell / layout backgrounds ────────────────────── */
+.dark .bg-gray-100  { background-color: hsl(222 47% 6%); }
+.dark .bg-gray-50   { background-color: hsl(222 45% 10%); }
+.dark .bg-white     { background-color: hsl(222 45% 14%); }
+
+/* ── Card-like surfaces ──────────────────────────────────── */
+.dark .bg-gray-50\/30  { background-color: hsl(222 45% 12% / 0.5); }
+.dark .bg-gray-50\/50  { background-color: hsl(222 45% 12% / 0.7); }
+.dark .bg-gray-100\/60 { background-color: hsl(222 45% 16% / 0.6); }
+.dark .bg-gray-100\/70 { background-color: hsl(222 45% 16% / 0.7); }
+
+/* ── Hover states ────────────────────────────────────────── */
+.dark .hover\:bg-gray-50:hover        { background-color: hsl(222 45% 19%); }
+.dark .hover\:bg-gray-50\/80:hover    { background-color: hsl(222 45% 19% / 0.8); }
+.dark .hover\:bg-gray-100\/60:hover   { background-color: hsl(222 45% 20% / 0.6); }
+.dark .hover\:bg-gray-100\/70:hover   { background-color: hsl(222 45% 20% / 0.7); }
+.dark .hover\:bg-blue-50\/30:hover    { background-color: hsl(199 89% 40% / 0.2); }
+.dark .hover\:bg-gray-100:hover       { background-color: hsl(222 45% 20%); }
+
+/* ── Text colors — muito mais vivos ──────────────────────── */
+.dark .text-gray-900 { color: hsl(210 40% 98%); }
+.dark .text-gray-800 { color: hsl(210 35% 93%); }
+.dark .text-gray-700 { color: hsl(213 30% 86%); }
+.dark .text-gray-600 { color: hsl(215 25% 76%); }
+.dark .text-gray-500 { color: hsl(215 20% 64%); }
+.dark .text-gray-400 { color: hsl(215 18% 52%); }
+
+/* ── Borders — mais visíveis ─────────────────────────────── */
+.dark .border-gray-100 { border-color: hsl(222 40% 22%); }
+.dark .border-gray-200 { border-color: hsl(222 40% 28%); }
+.dark .border-gray-300 { border-color: hsl(222 40% 35%); }
+
+/* ── Header ──────────────────────────────────────────────── */
+.dark header.sticky { background-color: hsl(222 45% 10%); border-color: hsl(222 40% 26%); }
+
+/* ── Cards — mais visíveis e com sombra ─────────────────── */
+.dark .rounded-xl.bg-white,
+.dark .rounded-2xl.bg-white {
+  background-color: hsl(222 45% 14%);
+  box-shadow: 0 4px 16px hsl(0 0% 0% / 0.35), 0 1px 4px hsl(0 0% 0% / 0.2);
+}
+
+/* ── Table internals ─────────────────────────────────────── */
+.dark thead tr,
+.dark .bg-gray-50 thead tr { background-color: hsl(222 45% 16%); }
+.dark tbody tr:hover td     { background-color: hsl(222 45% 19%); }
+.dark tbody td,
+.dark tbody th              { border-color: hsl(222 40% 22%); }
+
+/* ── Input / Textarea / Select ───────────────────────────── */
+.dark input:not([type="checkbox"]):not([type="radio"]),
+.dark textarea,
+.dark [data-radix-select-trigger] {
+  background-color: hsl(222 45% 16%);
+  border-color: hsl(222 40% 30%);
+  color: hsl(210 40% 97%);
+}
+.dark input::placeholder,
+.dark textarea::placeholder { color: hsl(215 20% 48%); }
+
+/* ── Dropdown / Popover / Dialog content ─────────────────── */
+.dark [role="dialog"] .bg-white,
+.dark [data-radix-popper-content-wrapper] .bg-white {
+  background-color: hsl(222 45% 16%);
+  border-color: hsl(222 40% 30%);
+}
+
+/* ── Badge secondary (gray tones) ───────────────────────── */
+.dark .bg-gray-100.text-gray-600,
+.dark .bg-gray-100.text-gray-700 {
+  background-color: hsl(222 40% 22%);
+  color: hsl(213 30% 85%);
+}
+
+/* ── Stats / info cards with bg-gray-50 ─────────────────── */
+.dark .rounded-xl.bg-gray-50 {
+  background-color: hsl(222 45% 16%);
+  box-shadow: 0 2px 8px hsl(0 0% 0% / 0.3);
+}
+
+/* ── Notification panel background ─────────────────────── */
+.dark .bg-gray-50\/70 { background-color: hsl(222 45% 13% / 0.9); }
+
+/* ── Smooth transition on all elements ───────────────────── */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color;
+  transition-duration: 150ms;
+  transition-timing-function: ease;
+}
+/* But NOT on elements that have their own transitions (animations) */
+.transition-all, .transition-shadow, .transition-colors, .transition-transform {
+  transition-property: all, box-shadow, color background-color border-color, transform;
+}
+
+/* ── SuperAdmin page shell ───────────────────────────────── */
+.dark .min-h-screen.bg-gray-50 { background-color: hsl(222 47% 6%); }
+.dark .sticky.top-0.bg-white   { background-color: hsl(222 45% 10%); border-color: hsl(222 40% 26%); }
+
+/* ── Scrollbar ───────────────────────────────────────────── */
+::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: hsl(220 13% 75%); border-radius: 3px; }
+.dark ::-webkit-scrollbar-thumb { background: hsl(222 40% 35%); }
+::-webkit-scrollbar-thumb:hover { background: hsl(220 13% 60%); }
