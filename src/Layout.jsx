@@ -4,9 +4,10 @@ import { createPageUrl } from "./utils";
 import { useAuth } from "@/lib/AuthContext";
 import { useNotifications } from "@/hooks/useNotifications";
 import OnboardingWizard from "@/components/OnboardingWizard";
+import TrialBanner from "@/components/TrialBanner";
 import {
   LayoutDashboard, Users, Kanban, FileText, DollarSign, HeadphonesIcon,
-  MapPin, Menu, X, ChevronDown, LogOut, Bell,
+  MapPin, Menu, X, ChevronDown, LogOut, Bell, UserCog,
   AlertTriangle, Clock, Phone, CreditCard, FileWarning, Sun, Moon, BarChart2,
 } from "lucide-react";
 import {
@@ -15,14 +16,15 @@ import {
 import { useTheme } from "next-themes";
 
 const crmNavItems = [
-  { name: "Dashboard",  page: "Dashboard",  icon: LayoutDashboard },
-  { name: "Pipeline",   page: "Pipeline",   icon: Kanban },
-  { name: "Leads",      page: "Leads",      icon: Users },
-  { name: "Contratos",  page: "Contracts",  icon: FileText },
-  { name: "Financeiro", page: "Financial",  icon: DollarSign },
-  { name: "Pós-Venda",  page: "PostSale",   icon: HeadphonesIcon },
-  { name: "Relatórios", page: "Reports",    icon: BarChart2 },
-  { name: "Mapa",       page: "Map",        icon: MapPin },
+  { name: "Dashboard",  page: "Dashboard",  icon: LayoutDashboard, roles: ["admin","user"] },
+  { name: "Pipeline",   page: "Pipeline",   icon: Kanban,          roles: ["admin","user"] },
+  { name: "Leads",      page: "Leads",      icon: Users,           roles: ["admin","user"] },
+  { name: "Contratos",  page: "Contracts",  icon: FileText,        roles: ["admin","user"] },
+  { name: "Financeiro", page: "Financial",  icon: DollarSign,      roles: ["admin","user"] },
+  { name: "Pós-Venda",  page: "PostSale",   icon: HeadphonesIcon,  roles: ["admin"] },
+  { name: "Relatórios", page: "Reports",    icon: BarChart2,       roles: ["admin","user"] },
+  { name: "Mapa",       page: "Map",        icon: MapPin,          roles: ["admin","user"] },
+  { name: "Equipe",     page: "Team",       icon: UserCog,         roles: ["admin"] },
 ];
 
 const NOTIF_ICON = {
@@ -165,10 +167,7 @@ export default function Layout({ children, currentPageName }) {
 
         {/* Navigation */}
         <nav className="flex-1 py-5 px-3 space-y-1.5 overflow-y-auto">
-          {crmNavItems.filter(item => {
-            if (user?.role === "user" && item.page === "PostSale") return false;
-            return true;
-          }).map((item) => {
+          {crmNavItems.filter(item => item.roles.includes(user?.role ?? "user")).map((item) => {
             const isActive = currentPageName === item.page;
             return (
               <Link
@@ -195,10 +194,10 @@ export default function Layout({ children, currentPageName }) {
               <DropdownMenuTrigger asChild>
                 <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-white/15 transition-colors group">
                   <div className="w-9 h-9 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-white text-sm font-black shadow-md shrink-0">
-                    {user.full_name?.[0]?.toUpperCase() || "U"}
+                    {(user.nome || user.full_name)?.[0]?.toUpperCase() || "U"}
                   </div>
                   <div className="flex-1 text-left min-w-0">
-                    <p className="text-sm font-black text-white truncate">{user.full_name || "Usuário"}</p>
+                    <p className="text-sm font-black text-white truncate">{user.nome || user.full_name || "Usuário"}</p>
                     <p className="text-xs text-white/70 font-semibold capitalize">{user.role || "user"}</p>
                   </div>
                   <ChevronDown className="w-4 h-4 text-white/60 group-hover:text-white shrink-0" />
@@ -255,6 +254,7 @@ export default function Layout({ children, currentPageName }) {
           </div>
         </header>
 
+        {user?.role !== "super_admin" && <TrialBanner />}
         <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
           {children}
         </main>

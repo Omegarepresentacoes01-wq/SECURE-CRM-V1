@@ -59,6 +59,7 @@ import Pipeline from './pages/Pipeline';
 import PostSale from './pages/PostSale';
 import Reports from './pages/Reports';
 import SuperAdmin from './pages/SuperAdmin';
+import Team from './pages/Team';
 import __Layout from './Layout.jsx';
 
 
@@ -75,6 +76,7 @@ export const PAGES = {
     "PostSale": PostSale,
     "Reports": Reports,
     "SuperAdmin": SuperAdmin,
+    "Team": Team,
 }
 
 export const pagesConfig = {

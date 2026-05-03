@@ -4,13 +4,20 @@ const getDb = require('../db');
 const auth = require('../middleware/auth');
 router.use(auth);
 
-const filtroOrg = (req) => req.usuario.role === 'super_admin' ? null : req.usuario.organizacao_id;
+function filtroOrg(req) {
+  if (req.usuario.role === 'super_admin') return { orgId: null, userId: null };
+  if (req.usuario.role === 'admin')       return { orgId: req.usuario.organizacao_id, userId: null };
+  // vendedor: vê apenas seus próprios leads
+  return { orgId: req.usuario.organizacao_id, userId: req.usuario.id };
+}
 
 router.get('/', (req, res) => {
-  const db = getDb(); const orgId = filtroOrg(req);
+  const db = getDb();
+  const { orgId, userId } = filtroOrg(req);
   const { status, temperatura, origem, tipo_negocio, tipo_imovel, urgencia, limit } = req.query;
   let sql = 'SELECT * FROM leads WHERE 1=1'; const p = [];
   if (orgId) { sql += ' AND organizacao_id = ?'; p.push(orgId); }
+  if (userId) { sql += ' AND criado_por = ?'; p.push(userId); }
   if (status) { sql += ' AND status = ?'; p.push(status); }
   if (temperatura) { sql += ' AND temperatura = ?'; p.push(temperatura); }
   if (origem) { sql += ' AND origem = ?'; p.push(origem); }
@@ -23,25 +30,28 @@ router.get('/', (req, res) => {
 });
 
 router.get('/:id', (req, res) => {
-  const db = getDb(); const orgId = filtroOrg(req);
+  const db = getDb(); const { orgId, userId } = filtroOrg(req);
   let sql = 'SELECT * FROM leads WHERE id = ?'; const p = [req.params.id];
   if (orgId) { sql += ' AND organizacao_id = ?'; p.push(orgId); }
+  if (userId) { sql += ' AND criado_por = ?'; p.push(userId); }
   const row = db.prepare(sql).get(...p);
   if (!row) return res.status(404).json({ error: 'Lead não encontrado' });
   res.json({ data: row });
 });
 
 router.post('/', (req, res) => {
-  const db = getDb(); const d = req.body.lead ?? req.body;
-  const orgId = filtroOrg(req) ?? d.organizacao_id;
-  const result = db.prepare(`INSERT INTO leads (nome,empresa,telefone,email,cep,endereco,cidade,estado,status,temperatura,origem,tipo_negocio,tipo_imovel,subtipo_imovel,urgencia,valor_estimado,latitude,longitude,organizacao_id,criado_por) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(d.nome,d.empresa??null,d.telefone??null,d.email??null,d.cep??null,d.endereco??null,d.cidade??null,d.estado??null,d.status??'novo',d.temperatura??'frio',d.origem??null,d.tipo_negocio??null,d.tipo_imovel??null,d.subtipo_imovel??null,d.urgencia??'media',d.valor_estimado??null,d.latitude??null,d.longitude??null,orgId,req.usuario.id);
+  const db = getDb(); const { orgId } = filtroOrg(req); const d = req.body.lead ?? req.body;
+  const finalOrgId = orgId ?? d.organizacao_id;
+  const result = db.prepare(`INSERT INTO leads (nome,empresa,telefone,email,cep,endereco,cidade,estado,status,temperatura,origem,tipo_negocio,tipo_imovel,subtipo_imovel,urgencia,valor_estimado,latitude,longitude,organizacao_id,criado_por) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+    .run(d.nome,d.empresa??null,d.telefone??null,d.email??null,d.cep??null,d.endereco??null,d.cidade??null,d.estado??null,d.status??'novo',d.temperatura??'frio',d.origem??null,d.tipo_negocio??null,d.tipo_imovel??null,d.subtipo_imovel??null,d.urgencia??'media',d.valor_estimado??null,d.latitude??null,d.longitude??null,finalOrgId,req.usuario.id);
   res.status(201).json({ data: db.prepare('SELECT * FROM leads WHERE id = ?').get(result.lastInsertRowid) });
 });
 
 router.put('/:id', (req, res) => {
-  const db = getDb(); const orgId = filtroOrg(req); const d = req.body.lead ?? req.body;
+  const db = getDb(); const { orgId, userId } = filtroOrg(req); const d = req.body.lead ?? req.body;
   let chk = 'SELECT id FROM leads WHERE id = ?'; const cp = [req.params.id];
   if (orgId) { chk += ' AND organizacao_id = ?'; cp.push(orgId); }
+  if (userId) { chk += ' AND criado_por = ?'; cp.push(userId); }
   if (!db.prepare(chk).get(...cp)) return res.status(404).json({ error: 'Lead não encontrado' });
   const cols = ['nome','empresa','telefone','email','cep','endereco','cidade','estado','status','temperatura','origem','tipo_negocio','tipo_imovel','subtipo_imovel','urgencia','valor_estimado','latitude','longitude'];
   const sets = []; const params = [];
@@ -51,9 +61,10 @@ router.put('/:id', (req, res) => {
 });
 
 router.delete('/:id', (req, res) => {
-  const db = getDb(); const orgId = filtroOrg(req);
+  const db = getDb(); const { orgId, userId } = filtroOrg(req);
   let sql = 'DELETE FROM leads WHERE id = ?'; const p = [req.params.id];
   if (orgId) { sql += ' AND organizacao_id = ?'; p.push(orgId); }
+  if (userId) { sql += ' AND criado_por = ?'; p.push(userId); }
   const r = db.prepare(sql).run(...p);
   if (r.changes === 0) return res.status(404).json({ error: 'Lead não encontrado' });
   res.json({ data: { id: Number(req.params.id) } });
