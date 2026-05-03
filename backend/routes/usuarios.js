@@ -1,0 +1,108 @@
+const express = require('express');
+const router = express.Router();
+const bcrypt = require('bcryptjs');
+const getDb = require('../db');
+const auth = require('../middleware/auth');
+
+router.use(auth);
+
+function publicar(u) {
+  return { id: u.id, nome: u.nome, email: u.email, role: u.role, organizacao_id: u.organizacao_id, avatar: u.avatar, created_date: u.created_date };
+}
+
+// GET /api/v1/usuarios
+router.get('/', (req, res) => {
+  const db = getDb();
+
+  let sql;
+  const params = [];
+
+  if (req.usuario.role === 'super_admin') {
+    sql = 'SELECT * FROM usuarios ORDER BY created_date DESC';
+  } else {
+    sql = 'SELECT * FROM usuarios WHERE organizacao_id = ? ORDER BY created_date DESC';
+    params.push(req.usuario.organizacao_id);
+  }
+
+  if (req.query.limit) { sql += ' LIMIT ?'; params.push(Number(req.query.limit)); }
+  res.json({ data: db.prepare(sql).all(...params).map(publicar) });
+});
+
+// GET /api/v1/usuarios/:id
+router.get('/:id', (req, res) => {
+  const db = getDb();
+  const u = db.prepare('SELECT * FROM usuarios WHERE id = ?').get(req.params.id);
+  if (!u) return res.status(404).json({ error: 'Usuário não encontrado' });
+
+  if (req.usuario.role !== 'super_admin' && u.organizacao_id !== req.usuario.organizacao_id && u.id !== req.usuario.id) {
+    return res.status(403).json({ error: 'Acesso negado' });
+  }
+
+  res.json({ data: publicar(u) });
+});
+
+// POST /api/v1/usuarios
+router.post('/', (req, res) => {
+  const db = getDb();
+  const d = req.body.usuario ?? req.body;
+
+  if (!d.email || !d.senha) return res.status(400).json({ error: 'Email e senha são obrigatórios' });
+  if (db.prepare('SELECT id FROM usuarios WHERE email = ?').get(d.email.toLowerCase().trim())) {
+    return res.status(422).json({ error: 'Email já cadastrado' });
+  }
+
+  const orgId = req.usuario.role === 'super_admin' ? (d.organizacao_id ?? null) : req.usuario.organizacao_id;
+  const hash = bcrypt.hashSync(d.senha, 10);
+
+  const result = db.prepare(
+    'INSERT INTO usuarios (nome, email, senha_hash, role, organizacao_id, avatar) VALUES (?, ?, ?, ?, ?, ?)'
+  ).run(d.nome, d.email.toLowerCase().trim(), hash, d.role ?? 'user', orgId, d.avatar ?? null);
+
+  res.status(201).json({ data: publicar(db.prepare('SELECT * FROM usuarios WHERE id = ?').get(result.lastInsertRowid)) });
+});
+
+// PUT /api/v1/usuarios/:id
+router.put('/:id', (req, res) => {
+  const db = getDb();
+  const alvo = db.prepare('SELECT * FROM usuarios WHERE id = ?').get(req.params.id);
+  if (!alvo) return res.status(404).json({ error: 'Usuário não encontrado' });
+
+  const podeEditar =
+    req.usuario.role === 'super_admin' ||
+    alvo.id === req.usuario.id ||
+    (req.usuario.role === 'admin' && alvo.organizacao_id === req.usuario.organizacao_id);
+
+  if (!podeEditar) return res.status(403).json({ error: 'Acesso negado' });
+
+  const d = req.body.usuario ?? req.body;
+  const sets = [];
+  const params = [];
+
+  if (d.nome !== undefined) { sets.push('nome = ?'); params.push(d.nome); }
+  if (d.email !== undefined) { sets.push('email = ?'); params.push(d.email.toLowerCase().trim()); }
+  if (d.avatar !== undefined) { sets.push('avatar = ?'); params.push(d.avatar); }
+  if (d.role !== undefined && req.usuario.role === 'super_admin') { sets.push('role = ?'); params.push(d.role); }
+  if (d.organizacao_id !== undefined && req.usuario.role === 'super_admin') { sets.push('organizacao_id = ?'); params.push(d.organizacao_id); }
+  if (d.senha) { sets.push('senha_hash = ?'); params.push(bcrypt.hashSync(d.senha, 10)); }
+
+  if (sets.length > 0) {
+    params.push(req.params.id);
+    db.prepare(`UPDATE usuarios SET ${sets.join(', ')} WHERE id = ?`).run(...params);
+  }
+
+  res.json({ data: publicar(db.prepare('SELECT * FROM usuarios WHERE id = ?').get(req.params.id)) });
+});
+
+// DELETE /api/v1/usuarios/:id
+router.delete('/:id', (req, res) => {
+  if (req.usuario.role !== 'super_admin' && req.usuario.role !== 'admin') {
+    return res.status(403).json({ error: 'Acesso negado' });
+  }
+
+  const db = getDb();
+  const result = db.prepare('DELETE FROM usuarios WHERE id = ?').run(req.params.id);
+  if (result.changes === 0) return res.status(404).json({ error: 'Usuário não encontrado' });
+  res.json({ data: { id: Number(req.params.id) } });
+});
+
+module.exports = router;
