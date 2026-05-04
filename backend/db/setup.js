@@ -14,7 +14,7 @@ db.exec(`
     nome TEXT NOT NULL, cnpj TEXT, responsavel TEXT, email TEXT, telefone TEXT,
     status TEXT DEFAULT 'trial', plano TEXT DEFAULT 'basico',
     valor_mensal REAL DEFAULT 0, limite_usuarios INTEGER DEFAULT 5,
-    vencimento_plano TEXT, trial_fim TEXT,
+    vencimento_plano TEXT, trial_fim TEXT, inicio_assinatura TEXT,
     created_date TEXT DEFAULT (datetime('now'))
   );
   CREATE TABLE IF NOT EXISTS usuarios (
@@ -82,6 +82,7 @@ db.exec(`
     valor REAL DEFAULT 0, desconto REAL DEFAULT 0, total REAL DEFAULT 0,
     vencimento TEXT, status TEXT DEFAULT 'pendente',
     payment_method TEXT DEFAULT 'pix', pago_em TEXT,
+    plano TEXT, coupon_code TEXT, periodo_inicio TEXT, periodo_fim TEXT,
     created_date TEXT DEFAULT (datetime('now'))
   );
   CREATE TABLE IF NOT EXISTS cupons (
@@ -89,6 +90,7 @@ db.exec(`
     codigo TEXT UNIQUE NOT NULL, desconto REAL DEFAULT 0,
     tipo_desconto TEXT DEFAULT 'percentual', validade TEXT,
     limite_uso INTEGER, usos INTEGER DEFAULT 0,
+    descricao TEXT, valido_de TEXT, status_manual TEXT DEFAULT 'active',
     created_date TEXT DEFAULT (datetime('now'))
   );
 `);

@@ -80,8 +80,10 @@ router.put('/:id', (req, res) => {
   if (d.nome  !== undefined) { sets.push('nome = ?');  params.push(d.nome); }
   if (d.email !== undefined) { sets.push('email = ?'); params.push(d.email.toLowerCase().trim()); }
   if (d.avatar !== undefined) { sets.push('avatar = ?'); params.push(d.avatar); }
-  if (d.role !== undefined && req.usuario.role === 'super_admin') { sets.push('role = ?'); params.push(d.role); }
-  if (d.organizacao_id !== undefined && req.usuario.role === 'super_admin') { sets.push('organizacao_id = ?'); params.push(d.organizacao_id); }
+  // Allow onboarding: a user with no org may set their own org and become admin
+  const isOwnOnboarding = alvo.id === req.usuario.id && alvo.organizacao_id === null;
+  if (d.role !== undefined && (req.usuario.role === 'super_admin' || isOwnOnboarding)) { sets.push('role = ?'); params.push(d.role); }
+  if (d.organizacao_id !== undefined && (req.usuario.role === 'super_admin' || isOwnOnboarding)) { sets.push('organizacao_id = ?'); params.push(d.organizacao_id); }
   if (d.senha) { sets.push('senha_hash = ?'); params.push(bcrypt.hashSync(d.senha, 10)); }
 
   if (sets.length > 0) { params.push(req.params.id); db.prepare(`UPDATE usuarios SET ${sets.join(', ')} WHERE id = ?`).run(...params); }

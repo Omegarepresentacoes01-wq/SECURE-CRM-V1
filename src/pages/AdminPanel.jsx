@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,14 +17,10 @@ import PlanManager from "@/components/admin/PlanManager";
 import moment from "moment";
 
 export default function AdminPanel() {
-  const [user, setUser] = useState(null);
+  const { user } = useAuth();
   const [showOrgForm, setShowOrgForm] = useState(false);
   const [editingOrg, setEditingOrg] = useState(null);
   const queryClient = useQueryClient();
-
-  React.useEffect(() => {
-    base44.auth.me().then(setUser);
-  }, []);
 
   const { data: organizations = [] } = useQuery({
     queryKey: ["organizations"],

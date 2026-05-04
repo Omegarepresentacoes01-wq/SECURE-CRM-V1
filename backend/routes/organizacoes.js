@@ -55,9 +55,11 @@ router.get('/:id', (req, res) => {
   res.json({ data: comStats(row, db) });
 });
 
-// POST /api/v1/organizacoes (super_admin only)
+// POST /api/v1/organizacoes
+// super_admin can always create; a user with no org may create their own (onboarding)
 router.post('/', (req, res) => {
-  if (req.usuario.role !== 'super_admin') return res.status(403).json({ error: 'Acesso negado' });
+  const canCreate = req.usuario.role === 'super_admin' || req.usuario.organizacao_id == null;
+  if (!canCreate) return res.status(403).json({ error: 'Acesso negado' });
   const db = getDb(); const d = req.body.organizacao ?? req.body;
   // trial_fim = hoje + 10 dias para orgs em trial
   let trial_fim = d.trial_fim ?? null;
@@ -65,10 +67,12 @@ router.post('/', (req, res) => {
     const dt = new Date(); dt.setDate(dt.getDate() + 10);
     trial_fim = dt.toISOString().split('T')[0];
   }
-  const plano = d.plano ?? 'basico';
+  const plano  = d.plano ?? 'basico';
   const limite = d.limite_usuarios ?? PLAN_LIMITS[plano] ?? 3;
-  const result = db.prepare(`INSERT INTO organizacoes (nome,cnpj,responsavel,email,telefone,status,plano,valor_mensal,limite_usuarios,vencimento_plano,trial_fim) VALUES (?,?,?,?,?,?,?,?,?,?,?)`)
-    .run(d.nome,d.cnpj??null,d.responsavel??null,d.email??null,d.telefone??null,d.status??'trial',plano,d.valor_mensal??0,limite,d.vencimento_plano??null,trial_fim);
+  // Non-super_admin onboarding: force trial status
+  const status = req.usuario.role === 'super_admin' ? (d.status ?? 'trial') : 'trial';
+  const result = db.prepare(`INSERT INTO organizacoes (nome,cnpj,responsavel,email,telefone,status,plano,valor_mensal,limite_usuarios,vencimento_plano,trial_fim,inicio_assinatura) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`)
+    .run(d.nome,d.cnpj??null,d.responsavel??null,d.email??null,d.telefone??null,status,plano,d.valor_mensal??0,limite,d.vencimento_plano??null,trial_fim,d.inicio_assinatura??null);
   res.status(201).json({ data: comStats(db.prepare('SELECT * FROM organizacoes WHERE id = ?').get(result.lastInsertRowid), db) });
 });
 
@@ -82,7 +86,7 @@ router.put('/:id', (req, res) => {
     return res.status(404).json({ error: 'Organização não encontrada' });
   }
   const d = req.body.organizacao ?? req.body;
-  const campos = ['nome','cnpj','responsavel','email','telefone','status','plano','valor_mensal','limite_usuarios','vencimento_plano','trial_fim'];
+  const campos = ['nome','cnpj','responsavel','email','telefone','status','plano','valor_mensal','limite_usuarios','vencimento_plano','trial_fim','inicio_assinatura'];
   const sets = []; const params = [];
   campos.forEach(c => { if (d[c] !== undefined) { sets.push(`${c} = ?`); params.push(d[c]); } });
   // Atualiza limite automaticamente se plano mudou e limite_usuarios não foi passado

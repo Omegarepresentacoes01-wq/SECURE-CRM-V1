@@ -25,7 +25,7 @@ export default function TrialBanner() {
   const { status, trial_fim, trial_dias } = orgData;
 
   // Conta expirada ou suspensa
-  if (status === "suspended" || status === "cancelado") {
+  if (status === "suspenso" || status === "cancelado") {
     return (
       <div className="bg-red-600 text-white px-4 py-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">

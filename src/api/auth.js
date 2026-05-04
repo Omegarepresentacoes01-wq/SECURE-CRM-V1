@@ -8,6 +8,7 @@ function normalizarUsuario(u) {
   if (!u) return u;
   return {
     ...u,
+    full_name:       u.nome ?? u.full_name ?? null,
     organization_id: u.organizacao_id ?? u.organization_id ?? null,
   };
 }
