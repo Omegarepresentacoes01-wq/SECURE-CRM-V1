@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
+import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -688,11 +689,29 @@ export default function SuperAdmin() {
 
   const createOrgMutation = useMutation({
     mutationFn: (data) => base44.entities.Organization.create(data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["organizations"] }); setShowOrgForm(false); setEditingOrg(null); },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["organizations"] });
+      setShowOrgForm(false);
+      setEditingOrg(null);
+      toast.success("Organização criada com sucesso!");
+    },
+    onError: (err) => {
+      console.error("Erro ao criar organização:", err);
+      toast.error("Erro ao criar organização. Verifique os dados e tente novamente.");
+    },
   });
   const updateOrgMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Organization.update(id, data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["organizations"] }); setShowOrgForm(false); setEditingOrg(null); },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["organizations"] });
+      setShowOrgForm(false);
+      setEditingOrg(null);
+      toast.success("Organização atualizada com sucesso!");
+    },
+    onError: (err) => {
+      console.error("Erro ao atualizar organização:", err);
+      toast.error("Erro ao atualizar organização. Tente novamente.");
+    },
   });
   const createBillingMutation = useMutation({
     mutationFn: (data) => base44.entities.Billing.create(data),
@@ -1075,13 +1094,14 @@ export default function SuperAdmin() {
           else createOrgMutation.mutate(data);
         }}
         initialData={editingOrg}
+        isSaving={createOrgMutation.isPending || updateOrgMutation.isPending}
       />
     </div>
   );
 }
 
 // ─── Formulário de Organização ────────────────────────────────────────────────
-function OrgForm({ open, onClose, onSave, initialData }) {
+function OrgForm({ open, onClose, onSave, initialData, isSaving = false }) {
   const [form, setForm] = useState(
     initialData || { name: "", cnpj: "", owner_name: "", owner_email: "", phone: "", status: "trial", plan: "basic", max_users: 3, monthly_price: 0, notes: "" }
   );
@@ -1155,9 +1175,9 @@ function OrgForm({ open, onClose, onSave, initialData }) {
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button onClick={() => onSave(form)} disabled={!form.name || !form.owner_email} className="bg-blue-600 hover:bg-blue-700 font-bold">
-            {initialData ? "Atualizar" : "Criar Organização"}
+          <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancelar</Button>
+          <Button onClick={() => onSave(form)} disabled={!form.name || !form.owner_email || isSaving} className="bg-blue-600 hover:bg-blue-700 font-bold">
+            {isSaving ? "Salvando..." : initialData ? "Atualizar" : "Criar Organização"}
           </Button>
         </DialogFooter>
       </DialogContent>
