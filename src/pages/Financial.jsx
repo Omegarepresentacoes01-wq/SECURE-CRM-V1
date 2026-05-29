@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Search, AlertTriangle, Clock, CheckCircle2, FileDown, CheckCheck, Percent, TrendingUp, Calendar, Award, ChevronDown, ChevronRight, User } from "lucide-react";
+import { Plus, Search, AlertTriangle, Clock, CheckCircle2, FileDown, CheckCheck, Percent, TrendingUp, Calendar, Award, ChevronDown, ChevronRight, User, RotateCcw } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import StatsCard from "../components/dashboard/StatsCard";
@@ -54,7 +54,7 @@ function generateFinancialPDF(financials, filters) {
         <td>${TYPE_LABEL[f.type] || f.type || "—"}</td>
         <td class="money">R$ ${(f.amount || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</td>
         <td>${f.due_date ? moment(f.due_date).format("DD/MM/YYYY") : "—"}</td>
-        <td>${f.payment_date ? moment(f.payment_date).format("DD/MM/YYYY") : "—"}</td>
+        <td>${f.paid_date ? moment(f.paid_date).format("DD/MM/YYYY") : "—"}</td>
         <td style="color:${statusColors[statusEff] || "#374151"};font-weight:800">${STATUS_LABEL[statusEff] || f.status}</td>
         <td>${PAYMENT_LABEL[f.payment_method] || f.payment_method || "—"}</td>
       </tr>`;
@@ -234,7 +234,11 @@ export default function Financial() {
   });
 
   const markAsPaid = (id) => {
-    updateMutation.mutate({ id, data: { status: "paid", payment_date: new Date().toISOString().split("T")[0] } });
+    updateMutation.mutate({ id, data: { status: "paid", paid_date: new Date().toISOString().split("T")[0] } });
+  };
+
+  const markAsPending = (id) => {
+    updateMutation.mutate({ id, data: { status: "pending", paid_date: null } });
   };
 
   const filtered = financials.filter((f) => {
@@ -460,7 +464,7 @@ export default function Financial() {
                                   {f.due_date ? moment(f.due_date).format("DD/MM/YYYY") : "—"}
                                 </TableCell>
                                 <TableCell className="text-xs font-bold text-gray-500 hidden md:table-cell">
-                                  {f.payment_date ? moment(f.payment_date).format("DD/MM/YYYY") : "—"}
+                                  {f.paid_date ? moment(f.paid_date).format("DD/MM/YYYY") : "—"}
                                 </TableCell>
                                 <TableCell>
                                   <Badge className={`text-[10px] font-black border-0 ${sc.badge}`}>
@@ -476,6 +480,16 @@ export default function Financial() {
                                       onClick={() => markAsPaid(f.id)}
                                     >
                                       <CheckCheck className="w-3.5 h-3.5" /> Pago
+                                    </Button>
+                                  )}
+                                  {f.status === "paid" && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="text-amber-600 hover:text-amber-700 hover:bg-amber-50 font-black text-xs gap-1 px-2"
+                                      onClick={() => markAsPending(f.id)}
+                                    >
+                                      <RotateCcw className="w-3.5 h-3.5" /> Desfazer
                                     </Button>
                                   )}
                                 </TableCell>

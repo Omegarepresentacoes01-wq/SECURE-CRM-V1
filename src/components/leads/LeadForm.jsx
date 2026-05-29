@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { MapPin, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 
 const defaults = {
   name: "", company: "", cpf_cnpj: "", phone: "", whatsapp: "", email: "",
@@ -103,14 +104,20 @@ export default function LeadForm({ open, onClose, onSave, initialData }) {
 
   const handleSave = async () => {
     setSaving(true);
-    const payload = {
-      ...form,
-      estimated_value: form.estimated_value ? Number(form.estimated_value) : undefined,
-      monthly_value: form.monthly_value ? Number(form.monthly_value) : undefined,
-    };
-    await onSave(payload);
-    setSaving(false);
-    onClose();
+    try {
+      const payload = {
+        ...form,
+        estimated_value: form.estimated_value ? Number(form.estimated_value) : undefined,
+        monthly_value: form.monthly_value ? Number(form.monthly_value) : undefined,
+      };
+      await onSave(payload);
+      onClose();
+    } catch (err) {
+      console.error("Erro ao salvar lead:", err);
+      toast.error("Erro ao salvar lead. Verifique os dados e tente novamente.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
