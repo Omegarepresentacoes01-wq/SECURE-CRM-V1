@@ -52,18 +52,30 @@ export default function Pipeline() {
     .reduce((s, l) => s + (l.estimated_value || 0), 0);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Pipeline</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            {leads.length} leads · Valor total: R$ {totalValue.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">Pipeline</h1>
+          <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+            {leads.length} leads · R$ {totalValue.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}
           </p>
         </div>
+        {/* Dica de scroll apenas no mobile */}
+        <p className="sm:hidden text-[11px] text-gray-400 font-medium flex items-center gap-1">
+          ← deslize para ver todas as etapas →
+        </p>
       </div>
 
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="flex gap-3 overflow-x-auto pb-4 -mx-1 px-1" style={{ WebkitOverflowScrolling: "touch" }}>
+        {/*
+          snap-x + snap-mandatory = desliza uma coluna por vez no mobile
+          scroll-smooth = animação suave
+          gap menor no mobile para mostrar o início da próxima coluna (peek)
+        */}
+        <div
+          className="flex gap-2 sm:gap-3 overflow-x-auto pb-4 -mx-3 sm:-mx-4 lg:-mx-6 px-3 sm:px-4 lg:px-6 snap-x snap-mandatory scroll-smooth"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
           {COLUMNS.map((col) => (
             <KanbanColumn
               key={col.id}
@@ -73,6 +85,8 @@ export default function Pipeline() {
               onCardClick={handleCardClick}
             />
           ))}
+          {/* Espaçador final para que a última coluna não fique colada na borda */}
+          <div className="shrink-0 w-3 sm:w-1" aria-hidden="true" />
         </div>
       </DragDropContext>
 

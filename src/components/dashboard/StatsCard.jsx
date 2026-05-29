@@ -16,21 +16,23 @@ export default function StatsCard({ title, value, subtitle, icon: Icon, color = 
   const c = colorMap[color] || colorMap.blue;
   return (
     <Card className={`bg-white border border-gray-200 border-l-4 ${c.border} shadow-sm hover:shadow-md transition-shadow`}>
-      <div className="p-5">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">{title}</p>
-            <p className={`text-2xl font-black leading-none mt-1.5 ${c.value}`}>{value}</p>
-            {subtitle && <p className="text-xs text-gray-400 mt-1">{subtitle}</p>}
+      <div className="p-3 sm:p-4 lg:p-5">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] sm:text-[11px] font-bold text-gray-500 uppercase tracking-wider truncate">{title}</p>
+            <p className={`text-lg sm:text-xl lg:text-2xl font-black leading-none mt-1 sm:mt-1.5 truncate ${c.value}`}>{value}</p>
+            {subtitle && (
+              <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 sm:mt-1 truncate">{subtitle}</p>
+            )}
             {trend != null && (
-              <div className={`flex items-center gap-1 text-xs font-bold mt-1.5 ${trend > 0 ? "text-emerald-600" : "text-red-500"}`}>
+              <div className={`flex items-center gap-1 text-[10px] sm:text-xs font-bold mt-1 sm:mt-1.5 ${trend > 0 ? "text-emerald-600" : "text-red-500"}`}>
                 {trend > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                {Math.abs(trend)}% vs mês anterior
+                {Math.abs(trend)}%
               </div>
             )}
           </div>
-          <div className={`w-10 h-10 rounded-xl ${c.bg} flex items-center justify-center shrink-0`}>
-            <Icon className={`w-5 h-5 ${c.icon}`} />
+          <div className={`w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 rounded-xl ${c.bg} flex items-center justify-center shrink-0`}>
+            <Icon className={`w-4 h-4 sm:w-4.5 sm:h-4.5 lg:w-5 lg:h-5 ${c.icon}`} />
           </div>
         </div>
       </div>
